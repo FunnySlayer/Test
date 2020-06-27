@@ -47,37 +47,37 @@ namespace DominationAIO.Champions.Aphelios
         {
             public static MenuSeparator harassSeparator = new MenuSeparator("harassSeparator", "Harass Settings");
             public static MenuBool Qharass = new MenuBool("Qharass", "Use Q in harass");
-            public static MenuBool Calibrum = new MenuBool("Qharass", "^  Use Q Calibrum in harass");
-            public static MenuBool Severum = new MenuBool("Qharass", "^  Use Q Severum in harass");
-            public static MenuBool Gravitum = new MenuBool("Qharass", "^  Use Q Gravitum in harass");
-            public static MenuBool Infernum = new MenuBool("Qharass", "^  Use Q Infernum in harass");
-            public static MenuBool Crescendum = new MenuBool("Qharass", "^  Use Q Crescendum in harass");
+            public static MenuBool Calibrum = new MenuBool("Charass", "^  Use Q Calibrum in harass");
+            public static MenuBool Severum = new MenuBool("Sharass", "^  Use Q Severum in harass");
+            public static MenuBool Gravitum = new MenuBool("Gharass", "^  Use Q Gravitum in harass");
+            public static MenuBool Infernum = new MenuBool("Iharass", "^  Use Q Infernum in harass");
+            public static MenuBool Crescendum = new MenuBool("Charass", "^  Use Q Crescendum in harass");
             public static MenuBool Wharass = new MenuBool("Wharass", "Use W in harass");
             public static MenuSlider ManaHarass = new MenuSlider("ManaHarass", "|| Only 'Harass' if mana >=", 30);
         }
         public class LaneClear
         {
             public static MenuSeparator laneClearSeperator = new MenuSeparator("laneClearSeperator", "Lane Clear Settings");
-            public static MenuBool QLaneClear = new MenuBool("Qharass", "Use Q in LaneClear");
-            public static MenuBool Calibrum = new MenuBool("Qharass", "^  Use Q Calibrum in LaneClear");
-            public static MenuBool Severum = new MenuBool("Qharass", "^  Use Q Severum in LaneClear");
-            public static MenuBool Gravitum = new MenuBool("Qharass", "^  Use Q Gravitum in LaneClear");
-            public static MenuBool Infernum = new MenuBool("Qharass", "^  Use Q Infernum in LaneClear");
-            public static MenuBool Crescendum = new MenuBool("Qharass", "^  Use Q Crescendum in LaneClear");
-            public static MenuBool WLaneClear = new MenuBool("Wharass", "Use W in LaneClear");
+            public static MenuBool QLaneClear = new MenuBool("QLaneClear", "Use Q in LaneClear");
+            public static MenuBool Calibrum = new MenuBool("CLaneClear", "^  Use Q Calibrum in LaneClear");
+            public static MenuBool Severum = new MenuBool("SLaneClear", "^  Use Q Severum in LaneClear");
+            public static MenuBool Gravitum = new MenuBool("GLaneClear", "^  Use Q Gravitum in LaneClear");
+            public static MenuBool Infernum = new MenuBool("ILaneClear", "^  Use Q Infernum in LaneClear");
+            public static MenuBool Crescendum = new MenuBool("CLaneClear", "^  Use Q Crescendum in LaneClear");
+            public static MenuBool WLaneClear = new MenuBool("WLaneClear", "Use W in LaneClear");
             public static MenuSlider ManaLaneClear = new MenuSlider("ManaLaneClear", "|| Only 'Lane Clear' if mana >=", 30);
         }
 
         public class JungleClear
         {
             public static MenuSeparator jungleClearSeparator    = new MenuSeparator("jungleClearSeparator", "Jungle Clear Settings");
-            public static MenuBool QJungleClear = new MenuBool("Qharass", "Use Q in JungleClear");
-            public static MenuBool Calibrum = new MenuBool("Qharass", "^  Use Q Calibrum in JungleClear");
-            public static MenuBool Severum = new MenuBool("Qharass", "^  Use Q Severum in JungleClear");
-            public static MenuBool Gravitum = new MenuBool("Qharass", "^  Use Q Gravitum in JungleClear");
-            public static MenuBool Infernum = new MenuBool("Qharass", "^  Use Q Infernum in JungleClear");
-            public static MenuBool Crescendum = new MenuBool("Qharass", "^  Use Q Crescendum in JungleClear");
-            public static MenuBool WJungleClear = new MenuBool("Wharass", "Use W in JungleClear");
+            public static MenuBool QJungleClear = new MenuBool("QJungleClear", "Use Q in JungleClear");
+            public static MenuBool Calibrum = new MenuBool("CJungleClear", "^  Use Q Calibrum in JungleClear");
+            public static MenuBool Severum = new MenuBool("SJungleClear", "^  Use Q Severum in JungleClear");
+            public static MenuBool Gravitum = new MenuBool("GJungleClear", "^  Use Q Gravitum in JungleClear");
+            public static MenuBool Infernum = new MenuBool("IJungleClear", "^  Use Q Infernum in JungleClear");
+            public static MenuBool Crescendum = new MenuBool("CJungleClear", "^  Use Q Crescendum in JungleClear");
+            public static MenuBool WJungleClear = new MenuBool("WJungleClear", "Use W in JungleClear");
             public static MenuSlider ManaJungleClear = new MenuSlider("ManaJungleClear", "|| Only 'Jungle Clear' is mana >=", 30);
         }
     }
@@ -561,7 +561,7 @@ namespace DominationAIO.Champions.Aphelios
                     }
                     if (target.HasBuff("aphelioscalibrumbonusrangebuff"))
                     {
-                        Orbwalker.Attack(target);
+                        Player.IssueOrder(GameObjectOrder.AttackUnit, target);
                     }
 
                     if (MenuSettings.Combo.Qcombo.Enabled)

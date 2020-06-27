@@ -39,9 +39,9 @@ namespace DominationAIO.Champions
         private static Spell q, qrw, w, e, r;
         private static AIHeroClient Player = ObjectManager.Player;
 
-        private static bool Qrock() => Player.HasBuff("QiyanaQ_Rock");
-        private static bool Qwater() => Player.HasBuff("QiyanaQ_Water");
-        private static bool Qgrass() => Player.HasBuff("QiyanaQ_Grass");
+        private static bool Qrock() => q.Name == "QiyanaQ_Rock";
+        private static bool Qwater() => q.Name == ("QiyanaQ_Water");
+        private static bool Qgrass() => q.Name == ("QiyanaQ_Grass");
 
         public static void ongameload()
         {
@@ -140,20 +140,20 @@ namespace DominationAIO.Champions
             var rockobj = GameObjects.AllGameObjects.Where(r => r.DistanceToPlayer() < 1100 && r.Position.IsWall() || r.Position.IsBuilding());
             var grassobj = GameObjects.Get<GrassObject>().Where(g => g.DistanceToPlayer() < 1100);
 
-            var water = new GameObject();
+            var water = new Vector2();
 
-            GameObject waterobj = null;
+            Vector2 waterobj = Vector2.Zero;
 
-            if (water.Position.X >= 2500 && water.Position.X <= 7000 && water.DistanceToPlayer() <= 1100)
+            if (water.X >= 2500 && water.X <= 7000 && water.DistanceToPlayer() <= 1100)
             {
-                if (water.Position.Y >= 8000 && water.Position.Y <= 12000)
+                if (water.Y >= 8000 && water.Y <= 12000)
                 {
                     waterobj = water;
                 }
             }
-            if (water.Position.X >= 8000 && water.Position.X <= 12000 && water.DistanceToPlayer() <= 1100)
+            if (water.X >= 8000 && water.X <= 12000 && water.DistanceToPlayer() <= 1100)
             {
-                if (water.Position.Y >= 3000 && water.Position.Y <= 7000)
+                if (water.Y >= 3000 && water.Y <= 7000)
                 {
                     waterobj = water;
                 }
@@ -181,14 +181,12 @@ namespace DominationAIO.Champions
             {
                 bool canwater = false;
                 bool canrock = false;
-                if (Qwater() || Qrock() || Qgrass()) return;
                 //Geometry.Circle firstcircle = new Geometry.Circle(Player.Position, 360, 20);
                 //Geometry.Circle secondcircle = new Geometry.Circle(Player.Position, 700, 20);
                 //Geometry.Circle thirdcircle = new Geometry.Circle(Player.Position, 700, 20);
 
-                if (waterobj != null && waterobj.Position.DistanceToPlayer() < 1100 && waterobj.Distance(target) < 700)
+                if (waterobj != Vector2.Zero && waterobj.DistanceToPlayer() < 1100 && waterobj.Distance(target) < 700)
                 {
-                    qrw.UpdateSourcePosition(Player.Position.Extend(waterobj.Position, 300), waterobj.Position);
                     var qpred = qrw.GetPrediction(target, false, -1, EnsoulSharp.SDK.Prediction.CollisionObjects.YasuoWall);
                     if (qpred.CastPosition != Vector3.Zero && qpred.Hitchance >= EnsoulSharp.SDK.Prediction.HitChance.High)
                     {
@@ -212,14 +210,12 @@ namespace DominationAIO.Champions
                 }else
                 { canrock = false; }
 
-                if (waterobj != null && waterobj.Position.DistanceToPlayer() < 1100 && waterobj.Distance(target) < 700 && canwater == true)
+                if (waterobj != null && waterobj.DistanceToPlayer() < 1100 && waterobj.Distance(target) < 700 && canwater == true)
                 {
-                    qrw.UpdateSourcePosition(Player.Position.Extend(waterobj.Position, 300), waterobj.Position);
                     var qpred = qrw.GetPrediction(target, false, -1, EnsoulSharp.SDK.Prediction.CollisionObjects.YasuoWall);
                     if(qpred.CastPosition != Vector3.Zero && qpred.Hitchance >= EnsoulSharp.SDK.Prediction.HitChance.High)
                     {
-                        if(!Player.IsDashing())
-                        w.Cast(waterobj.Position);
+                        w.Cast(waterobj);
                     }                   
                 }
                 else
@@ -232,7 +228,6 @@ namespace DominationAIO.Champions
                             var qpred = qrw.GetPrediction(target, false, -1, EnsoulSharp.SDK.Prediction.CollisionObjects.YasuoWall);
                             if (qpred.CastPosition != Vector3.Zero && qpred.Hitchance >= EnsoulSharp.SDK.Prediction.HitChance.High)
                             {
-                                if (!Player.IsDashing())
                                     w.Cast(rock.Position);
                             }
                         }
@@ -247,7 +242,6 @@ namespace DominationAIO.Champions
                                 var qpred = qrw.GetPrediction(target, false, -1, EnsoulSharp.SDK.Prediction.CollisionObjects.YasuoWall);
                                 if (qpred.CastPosition != Vector3.Zero && qpred.Hitchance >= EnsoulSharp.SDK.Prediction.HitChance.High)
                                 {
-                                    if (!Player.IsDashing())
                                         w.Cast(grass.Position);
                                 }
                             }
@@ -291,7 +285,7 @@ namespace DominationAIO.Champions
                     if(waterobj != null && waterobj.DistanceToPlayer() < i)
                     {
                         var rpos = rpred.CastPosition.ToVector2().Extend(Player.Position.ToVector2(), -i + target.Position.DistanceToPlayer());
-                        if (rpos == waterobj.Position.ToVector2())
+                        if (rpos == waterobj)
                             r.Cast(rpred.CastPosition);
                     }
                 }

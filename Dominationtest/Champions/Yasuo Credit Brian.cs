@@ -187,7 +187,7 @@ namespace Yasuo
             comboMenu.Add(MenuSettings.Combo.Wblocklist);
             comboMenu.Add(MenuSettings.Combo.useE);
             comboMenu.Add(MenuSettings.Combo.useEZicZac);
-            comboMenu.Add(MenuSettings.Combo.Eturret).Permashow();
+            comboMenu.Add(MenuSettings.Combo.Eturret).Permashow(true, "Combo E turret", SharpDX.Color.DarkRed);
             comboMenu.Add(MenuSettings.Combo.useR);
             comboMenu.Add(MenuSettings.Combo.Rtarget);
             comboMenu.Add(MenuSettings.Combo.Rhit);

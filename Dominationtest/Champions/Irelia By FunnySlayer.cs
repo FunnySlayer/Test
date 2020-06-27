@@ -87,6 +87,7 @@ namespace Template
     {
         private static SpellSlot summonerIgnite;
         private static Spell Q, W, E, R;
+        private static Spell Echeck;
         private static AIHeroClient objPlayer = ObjectManager.Player;
         private static Menu myMenu;
 
@@ -100,10 +101,13 @@ namespace Template
             W.SetCharged("IreliaW", "ireliawdefense", 800, 800, 0);
 
             E = new Spell(SpellSlot.E, 775f);
-            E.SetSkillshot(0.3f, 50f, 1800f, false, false, SkillshotType.Line);
+            E.SetSkillshot(0.25f, 50f, 1800f, false, false, SkillshotType.Line);
+
+            Echeck = new Spell(SpellSlot.E, 775f);
+            Echeck.SetSkillshot(0.15f + (0.25f * 2), 50, 1800f, false, false, SkillshotType.Circle);
 
             R = new Spell(SpellSlot.R, 1000f);
-            R.SetSkillshot(0.25f, 300, 1500, true, SkillshotType.Line);
+            R.SetSkillshot(0.25f, 350, 1500, true, SkillshotType.Line);
 
             #region Menu Init
 
@@ -193,11 +197,21 @@ namespace Template
             AIBaseClient.OnProcessSpellCast += AIBaseClient_OnProcessSpellCast;
         }
         public static Vector3 ECatPos;
+        public static float rtime;
+        public static float etime;
         private static void AIBaseClient_OnProcessSpellCast(AIBaseClient sender, AIBaseClientProcessSpellCastEventArgs args)
         {
             if (sender.IsMe && args.SData.Name == "IreliaEMissile")
             {
                 ECatPos = args.End;
+            }
+            if(sender.IsMe && args.SData.Name == "IreliaR")
+            {
+                rtime = Variables.GameTimeTickCount;
+            }
+            if (sender.IsMe && (args.SData.Name == "IreliaE2" || args.SData.Name == "IreliaE"))
+            {
+                etime = Variables.GameTimeTickCount;
             }
         }
 
@@ -291,13 +305,15 @@ namespace Template
                                             {
                                                 if(objPlayer.ManaPercent >= 15)
                                                 {
-                                                    Q.Cast(aIBaseClient);
+                                                    if (aIBaseClient.DistanceToPlayer() < Q.Range)
+                                                        Q.Cast(aIBaseClient);
                                                 }
                                             }
                                         }
                                         else
                                         {
-                                            Q.Cast(target);
+                                            if (target.DistanceToPlayer() < Q.Range)
+                                                Q.Cast(target);
                                         }
                                     }
                                     else
@@ -306,21 +322,23 @@ namespace Template
                                         {
                                             if (objPlayer.ManaPercent >= 15 && aIBaseClient.Health < Q.GetDamage(aIBaseClient))
                                             {
-                                                Q.Cast(aIBaseClient);
+                                                if (aIBaseClient.DistanceToPlayer() < Q.Range)
+                                                    Q.Cast(aIBaseClient);
                                             }
                                         }
                                     }
                                 }
                                 else
                                 {
-                                    Q.Cast(target);
+                                    if (target.DistanceToPlayer() < Q.Range)
+                                        Q.Cast(target);
                                 }
                             }
                         }
                         else
                         {
                             QgapObj(target);
-                            if(gapobj != null && (gapobj.HasBuff("ireliamark") || gapobj.Health <= GetQDmg(gapobj)) && Q.CanCast(gapobj))
+                            /*if(gapobj != null && (gapobj.HasBuff("ireliamark") || gapobj.Health <= GetQDmg(gapobj)) && Q.CanCast(gapobj))
                             {
                                 if(target.DistanceToPlayer() <= objPlayer.GetRealAutoAttackRange() + 200 && objPlayer.ManaPercent > 20)
                                 {
@@ -337,7 +355,7 @@ namespace Template
                                     if(gapobj.Health < GetQDmg(gapobj))
                                     Q.Cast(gapobj);
                                 }
-                            }
+                            }*/
                         }
                     }
                     if (MenuSettings.Combo.useW.Enabled)
@@ -397,23 +415,30 @@ namespace Template
                                     {
                                         if(objPlayer.ManaPercent > 20 && aIBaseClient.Health < GetQDmg(aIBaseClient))
                                         {
-                                            Q.Cast(aIBaseClient);
+                                            if (aIBaseClient.DistanceToPlayer() < Q.Range)
+                                                Q.Cast(aIBaseClient);
                                         }
                                     }
                                 }
                             }
                         }
-                        EcomboCastPostion(target);
+                        //EcomboCastPostion(target);
+                        if(Variables.GameTimeTickCount - (rtime + 500)  > 0)
+                        {
+                            NewEPred();
+                        }                        
                     }
                     if (MenuSettings.Combo.useR.Enabled && R.IsReady() && !target.HasBuff("ireliamark"))
                     {
                         var Rpred = R.GetPrediction(target, false, -1, CollisionObjects.YasuoWall);
-                        CastRx();
+                        if (Variables.GameTimeTickCount - (etime + 500) > 0)
+                            CastRx();
                         if(objPlayer.Position.CountEnemyHeroesInRange(800) < 2 && target.Distance(objPlayer) < 600)
                         {
                             if(target.Health <= GetQDmg(target) * 3 + (W.IsReady() ? W.GetDamage(target) : 0) + (E.IsReady() ? E.GetDamage(target) : 0) + R.GetDamage(target) + 100)
                             {
                                 if (Rpred.Hitchance == HitChance.VeryHigh && Rpred.CastPosition.DistanceToPlayer() < R.Range - 200)
+                                    if(Variables.GameTimeTickCount - (etime + 500) > 0)
                                     R.Cast(Rpred.CastPosition);
                             }
                         }
@@ -423,14 +448,17 @@ namespace Template
                                 if (Q.IsReady())
                                 {
                                     if (target.Health > GetQDmg(target))
-                                        R.Cast(Rpred.CastPosition);
+                                        if (Variables.GameTimeTickCount - (etime + 500) > 0)
+                                            R.Cast(Rpred.CastPosition);
                                 }
                                 else
                                 {
-                                    R.Cast(Rpred.CastPosition);
+                                    if (Variables.GameTimeTickCount - (etime + 500) > 0)
+                                        R.Cast(Rpred.CastPosition);
                                 }
                         }
-                        R.CastIfWillHit(target, MenuSettings.Combo.x);
+                        if (Variables.GameTimeTickCount - (etime + 500) > 0)
+                            R.CastIfWillHit(target, MenuSettings.Combo.x);
                     }
                 }
             }                      
@@ -444,6 +472,7 @@ namespace Template
             {
                 if(Objects != null && Objects.Health < Q.GetDamage(Objects))
                 {
+                    if(Objects.DistanceToPlayer() < Q.Range)
                     Q.Cast(Objects);
                     if (Objects.Position.Distance(target) < 600 && MenuSettings.Combo.useE.Enabled && !objPlayer.HasBuff("IreliaE"))
                     {
@@ -458,7 +487,8 @@ namespace Template
             {
                 if (Objects != null && Objects.Health < Q.GetDamage(Objects))
                 {
-                    Q.Cast(Objects);
+                    if (Objects.DistanceToPlayer() < Q.Range)
+                        Q.Cast(Objects);
                     if (Objects.Position.Distance(target) < 600 && MenuSettings.Combo.useE.Enabled && !objPlayer.HasBuff("IreliaE"))
                     {
                         E.Cast(objPlayer.Position - 800);
@@ -472,7 +502,8 @@ namespace Template
             {
                 if (Objects != null && Objects.Health < Q.GetDamage(Objects))
                 {
-                    Q.Cast(Objects);
+                    if (Objects.DistanceToPlayer() < Q.Range)
+                        Q.Cast(Objects);
                     if (Objects.Position.Distance(target) < 600 && MenuSettings.Combo.useE.Enabled && !objPlayer.HasBuff("IreliaE"))
                     {
                         E.Cast(objPlayer.Position - 800);
@@ -536,7 +567,7 @@ namespace Template
                 foreach (var pred in
                     targets.Select(i => R.GetPrediction(i, false, -1, CollisionObjects.YasuoWall))
                         .Where(
-                            i => i.Hitchance >= HitChance.High && i.AoeTargetsHitCount >= MenuSettings.Combo.x.Value)
+                            i => i.Hitchance >= HitChance.Medium && i.AoeTargetsHitCount >= MenuSettings.Combo.x.Value)
                         .OrderByDescending(i => i.AoeTargetsHitCount))
                 {
                     castPos = pred.CastPosition;
@@ -579,7 +610,7 @@ namespace Template
                         ))
                         {
                             var projectionInfo = prediction.CastPosition.ProjectOn(vector3.ToVector3(), ECatPos);
-                            if (projectionInfo.IsOnSegment && projectionInfo.LinePoint.Distance(aiheroClient_0.Position) <= 120 && projectionInfo.LinePoint.Distance(prediction.CastPosition) <= 120)
+                            if (projectionInfo.IsOnSegment && projectionInfo.LinePoint.Distance(prediction.CastPosition) <= 50)
                             {
                                 vector = vector3.ToVector3();
                                 vector2 = ECatPos;
@@ -587,7 +618,7 @@ namespace Template
                         }
                         if (vector.DistanceToPlayer() <= E.Range)
                         {
-                            if (vector != Vector3.Zero && vector2 != Vector3.Zero && Extensions.Distance(vector, vector2) > 300)
+                            if (vector != Vector3.Zero && vector2 != Vector3.Zero && Extensions.Distance(vector, vector2) > 200)
                             {
                                 if (objPlayer.HasBuff("IreliaE"))
                                 {
@@ -606,7 +637,7 @@ namespace Template
                     }
                     else
                     {
-                        Geometry.Circle circle = new Geometry.Circle(ObjectManager.Player.Position, 730);
+                        Geometry.Circle circle = new Geometry.Circle(ObjectManager.Player.Position, 450);
                         foreach (Vector2 vector3 in circle.Points)
                         {
                             foreach (Vector2 vector4 in circle.Points)
@@ -621,9 +652,9 @@ namespace Template
                         }
                         if (Extensions.DistanceToPlayer(vector) <= E.Range && Extensions.DistanceToPlayer(vector2) <= E.Range)
                         {
-                            if (vector.Distance(vector2) > 300 && vector != Vector3.Zero && vector2 != Vector3.Zero)
+                            if (vector.Distance(vector2) > 100 && vector != Vector3.Zero && vector2 != Vector3.Zero)
                             {
-                                if (!objPlayer.HasBuff("IreliaE") && vector2.Distance(aiheroClient_0) > 200)
+                                if (!objPlayer.HasBuff("IreliaE") && vector2.Distance(aiheroClient_0) > 100)
                                 {
                                     E.Cast(vector2, false);
                                 }
@@ -640,69 +671,63 @@ namespace Template
         
         private static void NewEPred()
         {
-            var targets = GameObjects.EnemyHeroes.Where(heroes => heroes.IsValidTarget(700) && !heroes.IsDead);
-            var getetarget = GameObjects.EnemyHeroes.Where(heroes => heroes.IsValidTarget(700) && !heroes.IsDead && heroes.HasBuff("ireliamark"));
-            var count = targets.Count();
-            var buffcount = getetarget.Count();
-
-            if (count == 0 || !E.IsReady(0) || count == buffcount) return;
-
-            foreach(var target in targets.Where(hero => !hero.HasBuff("ireliamark")))
+            var targets = GameObjects.EnemyHeroes.Where(i => i.IsValidTarget(775) && !i.IsDead);
+            foreach(var target in targets)
             {
-                if (target != null) return;
+                if(target != null || !target.HasBuff("ireliamark"))
+                {                   
+                    var echeck = Echeck.GetPrediction(target);
+                    float ereal = (E.Range * 2) / 20000;
 
-                var checkepred = E.GetPrediction(target, false, -1, CollisionObjects.YasuoWall);
-
-                if (count >= 2)
-                {
-                    if (count - buffcount > 1)
+                    if(E.IsReady(0))
                     {
-                        if (objPlayer.HasBuff("IreliaE"))
+                        if (!objPlayer.HasBuff("IreliaE"))
                         {
-                            int j = 600;
-                            for (int i = 1; i < 11; i++, j -= 50)
+                            if (echeck.CastPosition.DistanceToPlayer() < 975)
                             {
-                                DelayAction.Add(2, () => { return; });
-                                if (checkepred.Hitchance >= HitChance.High && checkepred.CastPosition.Extend(ECatPos, -j).DistanceToPlayer() < 775 && checkepred.CastPosition.Extend(ECatPos, -j).Distance(target) > 100)
-                                    E.Cast(checkepred.CastPosition.Extend(ECatPos, -400));
-                            }                           
+                                Geometry.Circle circle = new Geometry.Circle(objPlayer.Position, 500, 50);
+
+                                {
+                                    foreach (var onecircle in circle.Points)
+                                    {
+                                        if (onecircle.DistanceToPlayer() > 300 && onecircle.Distance(target) > 300)
+                                        {
+                                            E.Cast(onecircle);
+                                        }
+                                    }
+                                }
+                            }
                         }
                         else
                         {
-                            var gete1pos = new Geometry.Circle(objPlayer.Position, 730, 100);
-                            foreach(var e1pos in gete1pos.Points.Where(e => !e.IsWall() && !e.IsZero))
+                            for (int i = 775; i > 1; i--)
                             {
-                                E.UpdateSourcePosition(e1pos.ToVector3(), objPlayer.Position);
-                                if (E.GetPrediction(target).CastPosition.IsZero) return;
-                                else { E.Cast(e1pos); DelayAction.Add(1, () => { return; }); }
+                                var epred = E.GetPrediction(target);
+                                if (epred.CastPosition.DistanceToPlayer() < 730)
+                                {
+                                    var castepos = Vector2.Zero;
+
+                                    var epos = epred.CastPosition.DistanceToPlayer();
+
+                                    Geometry.Circle onecircle = new Geometry.Circle(objPlayer.Position, i);
+                                    foreach (var circle in onecircle.Points)
+                                    {
+                                        E.Delay = (circle.DistanceToPlayer() - epos) / E.Speed + 0.25f + ereal;                                        
+
+                                        if(epred.CastPosition.Extend(ECatPos, -i).ToVector2().DistanceToPlayer() < 775)
+                                        castepos = epred.CastPosition.Extend(ECatPos, -i).ToVector2();
+                                    }
+
+                                    if(castepos != Vector2.Zero)
+                                    {
+                                        E.Cast(castepos);
+                                    }
+                                }
                             }
-                        }
-                    }
+                        }                       
+                    }                   
                 }
-                else
-                {
-                    if (objPlayer.HasBuff("IreliaE"))
-                    {
-                        int j = 600;
-                        for (int i = 1; i < 11; i++, j -= 50)
-                        {
-                            DelayAction.Add(2, () => { return; });
-                            if (checkepred.Hitchance >= HitChance.High && checkepred.CastPosition.Extend(ECatPos, -j).DistanceToPlayer() < 775 && checkepred.CastPosition.Extend(ECatPos, -j).Distance(target) > 100)
-                                E.Cast(checkepred.CastPosition.Extend(ECatPos, -400));
-                        }
-                    }
-                    else
-                    {
-                        var gete1pos = new Geometry.Circle(objPlayer.Position, 730, 100);
-                        foreach (var e1pos in gete1pos.Points.Where(e => !e.IsWall() && !e.IsZero))
-                        {
-                            E.UpdateSourcePosition(e1pos.ToVector3(), objPlayer.Position);
-                            if (E.GetPrediction(target).CastPosition.IsZero) return;
-                            else { E.Cast(e1pos); DelayAction.Add(1, () => { return; }); }
-                        }
-                    }
-                }
-            }           
+            }
         }
         private static void Harass()
         {
@@ -737,7 +762,7 @@ namespace Template
                     {
                         if(mod.HasBuff("ireliamark"))
                         {
-                            Q.CanCast(mod);
+                            Q.Cast(mod);
                         }
                         if(mod.Health <= Q.GetDamage(mod))
                         {
